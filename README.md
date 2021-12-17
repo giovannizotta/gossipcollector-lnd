@@ -1,0 +1,1 @@
+# gossipcollector-lnd
