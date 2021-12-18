@@ -61,7 +61,6 @@ class NodeUpdate:
 
     def toJSON(self):
         ret = dict()
-        ret['identity_key'] = self.identity_key
         ret['alias'] = self.alias
         ret['color'] = self.color
         ret['node_addresses'] = [str(addr) for addr in self.node_addresses]
@@ -83,8 +82,8 @@ class ChannelEdgeUpdate:
         ret['chan_id'] = self.chan_id
         ret['capacity'] = self.capacity
         ret['routing_policy'] = str(self.routing_policy)
-        ret['advertising_node'] = self.advertising_node
-        ret['connecting_node'] = self.connecting_node
+        #ret['advertising_node'] = self.advertising_node
+        #ret['connecting_node'] = self.connecting_node
         return ret
 
     def __str__(self):
@@ -98,7 +97,6 @@ class ClosedChannelUpdate:
 
     def toJSON(self):
         ret = dict()
-        ret['chan_id'] = self.chan_id
         ret['capacity'] = self.capacity
         ret['closed_height'] = self.closed_height
         return ret
@@ -113,15 +111,21 @@ def get_time():
 
 def manage_node_update(node_update):
     node_upd = NodeUpdate(node_update)
-    print(node_upd)
+    key = f"node_update/{node_upd.identity_key}/{get_time()}"
+    etcd.put(key, str(node_upd))
+    print(f"PUT {key} successful")
 
 def manage_chan_update(chan_update):
     chan_upd = ChannelEdgeUpdate(chan_update)
-    print(chan_upd)
+    key = f"channel_update/{chan_upd.advertising_node}/{get_time()}"
+    etcd.put(key, str(chan_upd))
+    print(f"PUT {key} successful")
 
 def manage_closed_chan(closed_chan):
     closed_chan_upd = ClosedChannelUpdate(closed_chan)
-    print(closed_chan_upd)
+    key = f"closed_channel/{closed_chan_upd.chan_id}/{get_time()}"
+    etcd.put(key, str(closed_chan_upd))
+    print(f"PUT {key} successful")
 
 def main():
     stub, req, macaroon = setup_lnd_rpc()
