@@ -82,6 +82,7 @@ class ChannelEdgeUpdate:
         ret['chan_id'] = self.chan_id
         ret['capacity'] = self.capacity
         ret['routing_policy'] = str(self.routing_policy)
+        ret['routing_policy'] = ret['routing_policy'][1:-1]
         #ret['advertising_node'] = self.advertising_node
         #ret['connecting_node'] = self.connecting_node
         return ret
