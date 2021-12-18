@@ -112,7 +112,7 @@ def get_time():
 def manage_node_update(node_update):
     node_upd = NodeUpdate(node_update)
     key = f"node_update/{node_upd.identity_key}/{get_time()}"
-    etcd.put(key, str(node_upd.toJSON()))
+    etcd.put(key, json.dumps(node_upd.toJSON()))
     print(f"PUT {key} successful")
 
 def manage_chan_update(chan_update):
@@ -126,7 +126,7 @@ def manage_chan_update(chan_update):
 def manage_closed_chan(closed_chan):
     closed_chan_upd = ClosedChannelUpdate(closed_chan)
     key = f"closed_channel/{closed_chan_upd.chan_id}/{get_time()}"
-    etcd.put(key, str(closed_chan_upd.toJSON()))
+    etcd.put(key, json.dumps(closed_chan_upd.toJSON()))
     print(f"PUT {key} successful")
 
 def main():
