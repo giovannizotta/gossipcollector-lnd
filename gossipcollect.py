@@ -1,4 +1,4 @@
-import codecs, grpc, os, etcd3, time
+import codecs, grpc, os, etcd3, time, json
 import lightning_pb2 as lnrpc, lightning_pb2_grpc as lightningstub
 
 etcd = etcd3.client()
@@ -26,13 +26,13 @@ class RoutingPolicy:
 
     def toJSON(self):
         ret = dict()
-        ret['tld'] = self.tld
-        ret['min_htlc'] = self.min_htlc
-        ret['fee_base_msat'] = self.fee_base_msat
-        ret['fee_rate_milli_msat'] = self.fee_rate_milli_msat
-        ret['disabled'] = self.disabled
-        ret['max_htlc_msat'] = self.max_htlc_msat
-        ret['last_update'] = self.last_update
+        ret["tld"] = self.tld
+        ret["min_htlc"] = self.min_htlc
+        ret["fee_base_msat"] = self.fee_base_msat
+        ret["fee_rate_milli_msat"] = self.fee_rate_milli_msat
+        ret["disabled"] = self.disabled
+        ret["max_htlc_msat"] = self.max_htlc_msat
+        ret["last_update"] = self.last_update
         return ret
 
     def __str__(self):
@@ -45,8 +45,8 @@ class NodeAddress:
 
     def toJSON(self):
         ret = dict()
-        ret['network'] = self.network
-        ret['addr'] = self.addr
+        ret["network"] = self.network
+        ret["addr"] = self.addr
         return ret
 
     def __str__(self):
@@ -61,9 +61,9 @@ class NodeUpdate:
 
     def toJSON(self):
         ret = dict()
-        ret['alias'] = self.alias
-        ret['color'] = self.color
-        ret['node_addresses'] = [str(addr) for addr in self.node_addresses]
+        ret["alias"] = self.alias
+        ret["color"] = self.color
+        ret["node_addresses"] = [str(addr) for addr in self.node_addresses]
         return ret
 
     def __str__(self):
@@ -79,12 +79,11 @@ class ChannelEdgeUpdate:
 
     def toJSON(self):
         ret = dict()
-        ret['chan_id'] = self.chan_id
-        ret['capacity'] = self.capacity
-        ret['routing_policy'] = str(self.routing_policy)
-        ret['routing_policy'] = ret['routing_policy'][1:-1]
-        #ret['advertising_node'] = self.advertising_node
-        #ret['connecting_node'] = self.connecting_node
+        ret["chan_id"] = self.chan_id
+        ret["capacity"] = self.capacity
+        ret["routing_policy"] = self.routing_policy.toJSON() 
+        #ret["advertising_node"] = self.advertising_node
+        #ret["connecting_node"] = self.connecting_node
         return ret
 
     def __str__(self):
@@ -98,8 +97,8 @@ class ClosedChannelUpdate:
 
     def toJSON(self):
         ret = dict()
-        ret['capacity'] = self.capacity
-        ret['closed_height'] = self.closed_height
+        ret["capacity"] = self.capacity
+        ret["closed_height"] = self.closed_height
         return ret
 
     def __str__(self):
@@ -113,19 +112,21 @@ def get_time():
 def manage_node_update(node_update):
     node_upd = NodeUpdate(node_update)
     key = f"node_update/{node_upd.identity_key}/{get_time()}"
-    etcd.put(key, str(node_upd))
+    etcd.put(key, str(node_upd.toJSON()))
     print(f"PUT {key} successful")
 
 def manage_chan_update(chan_update):
     chan_upd = ChannelEdgeUpdate(chan_update)
     key = f"channel_update/{chan_upd.advertising_node}/{get_time()}"
-    etcd.put(key, str(chan_upd))
+    etcd.put(key, json.dumps(chan_upd.toJSON()))
+    #result = etcd.get(key)
+    #print(json.loads(result[0]))
     print(f"PUT {key} successful")
 
 def manage_closed_chan(closed_chan):
     closed_chan_upd = ClosedChannelUpdate(closed_chan)
     key = f"closed_channel/{closed_chan_upd.chan_id}/{get_time()}"
-    etcd.put(key, str(closed_chan_upd))
+    etcd.put(key, str(closed_chan_upd.toJSON()))
     print(f"PUT {key} successful")
 
 def main():
