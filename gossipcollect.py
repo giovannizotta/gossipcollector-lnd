@@ -71,19 +71,14 @@ class NodeUpdate:
 
 class ChannelEdgeUpdate:
     def __init__(self, chan_update):
-        self.chan_id = chan_update.chan_id
         self.capacity = chan_update.capacity
         self.routing_policy = RoutingPolicy(chan_update.routing_policy)
-        self.advertising_node = chan_update.advertising_node
         self.connecting_node = chan_update.connecting_node
 
     def toJSON(self):
         ret = dict()
-        ret["chan_id"] = self.chan_id
         ret["capacity"] = self.capacity
         ret["routing_policy"] = self.routing_policy.toJSON() 
-        #ret["advertising_node"] = self.advertising_node
-        #ret["connecting_node"] = self.connecting_node
         return ret
 
     def __str__(self):
@@ -117,7 +112,7 @@ def manage_node_update(node_update):
 
 def manage_chan_update(chan_update):
     chan_upd = ChannelEdgeUpdate(chan_update)
-    key = f"channel_update/{chan_upd.advertising_node}/{get_time()}"
+    key = f"channel_update/{chan_update.advertising_node}/{chan_update.chan_id}/{get_time()}"
     etcd.put(key, json.dumps(chan_upd.toJSON()))
     #result = etcd.get(key)
     #print(json.loads(result[0]))
